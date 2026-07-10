@@ -34,6 +34,22 @@ jobs:
       - name: Restore
         run: dotnet restore MinionScaler/MinionScaler.csproj --configfile NuGet.Config
 
+      - name: Download Dalamud
+        shell: pwsh
+        run: |
+          $dalamudRoot = Join-Path $env:RUNNER_TEMP "dalamud"
+          $zipPath = Join-Path $env:RUNNER_TEMP "dalamud.zip"
+          New-Item -ItemType Directory -Force -Path $dalamudRoot | Out-Null
+          Invoke-WebRequest -Uri "https://goatcorp.github.io/dalamud-distrib/latest.zip" -OutFile $zipPath
+          Expand-Archive -LiteralPath $zipPath -DestinationPath $dalamudRoot -Force
+          $devPath = Get-ChildItem -Path $dalamudRoot -Directory -Recurse |
+            Where-Object { $_.FullName -match "[\\/]Hooks[\\/]dev$" } |
+            Select-Object -First 1
+          if (-not $devPath) {
+            $devPath = Get-Item $dalamudRoot
+          }
+          "DALAMUD_HOME=$($devPath.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Build
         run: dotnet build MinionScaler/MinionScaler.csproj -c Release --no-restore
 
@@ -60,7 +76,7 @@ jobs:
       - name: Create custom repository JSON
         shell: pwsh
         run: |
-          $version = "0.0.0.1"
+          $version = "0.0.0.2"
           $tag = "${{ github.ref_name }}"
           if ("${{ github.event_name }}" -eq "release") {
             $tag = "${{ github.event.release.tag_name }}"
