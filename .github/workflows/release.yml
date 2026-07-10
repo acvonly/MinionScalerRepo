@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore MinionScaler/MinionScaler.csproj --configfile NuGet.Config
+
+      - name: Build
+        run: dotnet build MinionScaler/MinionScaler.csproj -c Release --no-restore
+
+      - name: Package plugin
+        shell: pwsh
+        run: |
+          $project = "MinionScaler"
+          $releaseDir = Get-ChildItem -Path "$project/bin/x64/Release" -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+          if (-not $releaseDir) {
+            $releaseDir = Get-ChildItem -Path "$project/bin/Release" -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+          }
+          if (-not $releaseDir) {
+            throw "Release output directory was not found."
+          }
+
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          $zip = Get-ChildItem -Path $releaseDir.FullName -Filter "MinionScaler*.zip" -Recurse | Select-Object -First 1
+          if ($zip) {
+            Copy-Item $zip.FullName artifacts/MinionScaler.zip -Force
+          } else {
+            Compress-Archive -Path "$($releaseDir.FullName)/*" -DestinationPath artifacts/MinionScaler.zip -Force
+          }
+
+      - name: Create custom repository JSON
+        shell: pwsh
+        run: |
+          $version = "0.0.0.1"
+          $tag = "${{ github.ref_name }}"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "manual"
+          }
+          New-Item -ItemType Directory -Force -Path public | Out-Null
+          ./scripts/make-repo-json.ps1 `
+            -Owner "${{ github.repository_owner }}" `
+            -Repository "${{ github.event.repository.name }}" `
+            -Version $version `
+            -Tag $tag `
+            -OutputPath public/repo.json
+
+      - name: Upload release asset
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/MinionScaler.zip
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
