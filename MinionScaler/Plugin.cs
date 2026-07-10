@@ -229,7 +229,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
         if (previewApplyToAll.TryGetValue(key, out var applyToAll))
             return applyToAll;
 
-        return Configuration.MinionScales.TryGetValue(key, out var setting) && setting.ApplyToAll;
+        return !Configuration.MinionScales.TryGetValue(key, out var setting) || setting.ApplyToAll;
     }
 
     public void SetPreviewApplyToAll(MinionEntry minion, bool applyToAll)
