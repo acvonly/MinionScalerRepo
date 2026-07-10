@@ -59,13 +59,13 @@ public sealed class ConfigWindow : Window, IDisposable
 
         if (ImGui.BeginTabBar("##minion-tabs"))
         {
-            if (ImGui.BeginTabItem($"Visible ({visibleMinions.Length})"))
+            if (ImGui.BeginTabItem($"Visible ({visibleMinions.Length})###visible-minions-tab"))
             {
                 DrawVisibleMinions(visibleMinions);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem($"Pinned ({pinnedMinions.Length})"))
+            if (ImGui.BeginTabItem($"Pinned ({pinnedMinions.Length})###pinned-minions-tab"))
             {
                 DrawPinnedMinions(pinnedMinions);
                 ImGui.EndTabItem();
@@ -187,8 +187,7 @@ public sealed class ConfigWindow : Window, IDisposable
         ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted(isOwn ? $"{name} (Mine)" : name);
 
-        var buttonWidth = GetHeaderButtonWidth(isSaved);
-        AlignNextItemToRight(buttonWidth);
+        ImGui.SameLine();
         DrawDefaultButton(key, isSaved);
 
         ImGui.SameLine();
@@ -292,25 +291,6 @@ public sealed class ConfigWindow : Window, IDisposable
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Delete");
-    }
-
-    private static float GetHeaderButtonWidth(bool isSaved)
-    {
-        var style = ImGui.GetStyle();
-        var defaultWidth = ImGui.CalcTextSize("\u21ba").X + style.FramePadding.X * 2.0f;
-        var actionText = isSaved ? FontAwesomeIcon.Trash.ToIconString() : "\uf08d";
-        var actionWidth = ImGui.CalcTextSize(actionText).X + style.FramePadding.X * 2.0f;
-
-        return defaultWidth + actionWidth + style.ItemSpacing.X;
-    }
-
-    private static void AlignNextItemToRight(float itemWidth)
-    {
-        var availableWidth = ImGui.GetContentRegionAvail().X;
-        if (availableWidth > itemWidth)
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + availableWidth - itemWidth);
-        else
-            ImGui.NewLine();
     }
 
     private static void PushDangerButtonColors()
