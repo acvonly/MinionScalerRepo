@@ -1,0 +1,13 @@
+{
+  "Author": "u1kob",
+  "Name": "Minion Scaler",
+  "Punchline": "Changes visible minion size locally.",
+  "Description": "Adjusts the local display scale of minions. Use /minionscaler to configure.",
+  "ApplicableVersion": "any",
+  "RepoUrl": "https://github.com/acvonly/MinionScalerRepo",
+  "Tags": [
+    "minion",
+    "companion",
+    "cosmetic"
+  ]
+}
