@@ -188,9 +188,6 @@ public sealed class ConfigWindow : Window, IDisposable
         ImGui.TextUnformatted(isOwn ? $"{name} (Mine)" : name);
 
         ImGui.SameLine();
-        DrawDefaultButton(key, isSaved);
-
-        ImGui.SameLine();
         if (isSaved)
             DrawDeleteButton(key);
         else
@@ -202,10 +199,13 @@ public sealed class ConfigWindow : Window, IDisposable
         var scale = plugin.GetScaleForKey(key);
         var modified = plugin.IsScaleModified(key);
         var availableWidth = ImGui.GetContentRegionAvail().X;
-        var itemSpacing = ImGui.GetStyle().ItemSpacing.X;
+        var imguiStyle = ImGui.GetStyle();
+        var itemSpacing = imguiStyle.ItemSpacing.X;
         var labelWidth = ImGui.CalcTextSize("Scale").X;
         var inputWidth = 58.0f;
-        var sliderWidth = Math.Max(80.0f, availableWidth - labelWidth - inputWidth - (itemSpacing * 3.0f));
+        var defaultButtonWidth = ImGui.CalcTextSize("\u21ba").X + (imguiStyle.FramePadding.X * 2.0f);
+        var scrollbarPadding = imguiStyle.ScrollbarSize + itemSpacing;
+        var sliderWidth = Math.Max(80.0f, availableWidth - labelWidth - inputWidth - defaultButtonWidth - scrollbarPadding - (itemSpacing * 4.0f));
 
         using var style = modified ? new ScaleHighlightScope() : null;
 
@@ -230,6 +230,9 @@ public sealed class ConfigWindow : Window, IDisposable
             else
                 plugin.SetPreviewScale(key, scale);
         }
+
+        ImGui.SameLine();
+        DrawDefaultButton(key, isSaved);
 
         var applyToAll = plugin.GetApplyToAllForKey(key);
         ImGui.AlignTextToFramePadding();
