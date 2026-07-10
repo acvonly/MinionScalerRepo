@@ -29,11 +29,15 @@ public sealed class ConfigWindow : Window, IDisposable
     {
         var config = plugin.Configuration;
 
+        ImGui.Columns(2, "##minion-columns", true);
+
         ImGui.TextUnformatted("Visible minions");
 
-        var visibleMinions = plugin.GetVisibleMinions();
-        if (visibleMinions.Count == 0)
-            ImGui.TextDisabled("No matching minions are currently visible.");
+        var visibleMinions = plugin.GetVisibleMinions()
+            .Where(minion => !config.MinionScales.ContainsKey(minion.Key))
+            .ToArray();
+        if (visibleMinions.Length == 0)
+            ImGui.TextDisabled("No unpinned minions are currently visible.");
 
         foreach (var minion in visibleMinions)
         {
@@ -41,25 +45,29 @@ public sealed class ConfigWindow : Window, IDisposable
 
             DrawMinionLabel(minion.Name, minion.IsOwn, minion.IconId);
             DrawScaleControls(minion.Key, minion.Name, minion.IconId, false);
+            ImGui.Separator();
 
             ImGui.PopID();
         }
 
-        ImGui.Separator();
-        ImGui.TextUnformatted("Saved minions");
+        ImGui.NextColumn();
+        ImGui.TextUnformatted("Pinned minions");
 
         if (config.MinionScales.Count == 0)
-            ImGui.TextDisabled("Saved minions will appear here.");
+            ImGui.TextDisabled("Pinned minions will appear here.");
 
         foreach (var setting in config.MinionScales.Values.OrderBy(x => x.Name).ToArray())
         {
-            ImGui.PushID($"saved-{setting.Key}");
+            ImGui.PushID($"pinned-{setting.Key}");
             var iconId = setting.IconId != 0 ? setting.IconId : plugin.GetIconIdForKey(setting.Key);
             DrawMinionLabel(setting.Name, false, iconId);
             DrawScaleControls(setting.Key, setting.Name, iconId, true);
+            ImGui.Separator();
 
             ImGui.PopID();
         }
+
+        ImGui.Columns(1);
     }
 
     private void DrawMinionLabel(string name, bool isOwn, uint iconId)
@@ -77,10 +85,13 @@ public sealed class ConfigWindow : Window, IDisposable
     private void DrawScaleControls(string key, string name, uint iconId, bool isSaved)
     {
         var scale = plugin.GetScaleForKey(key);
+        var availableWidth = ImGui.GetContentRegionAvail().X;
+        var sliderWidth = Math.Max(120.0f, availableWidth - 100.0f);
+
         ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted("Scale");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(240);
+        ImGui.SetNextItemWidth(sliderWidth);
         if (ImGui.SliderFloat("##scale-slider", ref scale, 0.1f, 10.0f, "%.2fx"))
         {
             if (isSaved)
@@ -101,7 +112,14 @@ public sealed class ConfigWindow : Window, IDisposable
 
         var applyToAll = plugin.GetApplyToAllForKey(key);
         ImGui.AlignTextToFramePadding();
-        ImGui.TextUnformatted("Apply");
+        if (ImGui.RadioButton("Everyone", applyToAll))
+        {
+            if (isSaved)
+                plugin.UpdateSavedApplyToAll(key, true);
+            else
+                plugin.SetPreviewApplyToAll(key, true);
+        }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("Mine only", !applyToAll))
         {
@@ -111,19 +129,10 @@ public sealed class ConfigWindow : Window, IDisposable
                 plugin.SetPreviewApplyToAll(key, false);
         }
 
-        ImGui.SameLine();
-        if (ImGui.RadioButton("Everyone", applyToAll))
-        {
-            if (isSaved)
-                plugin.UpdateSavedApplyToAll(key, true);
-            else
-                plugin.SetPreviewApplyToAll(key, true);
-        }
-
         if (!isSaved)
         {
             ImGui.SameLine();
-            if (ImGui.Button("Save"))
+            if (ImGui.Button("Pin"))
             {
                 plugin.SaveMinionScale(key, name, iconId);
             }
