@@ -4,10 +4,10 @@ Dalamud plugin prototype that changes visible minion size locally.
 
 ## Install from a custom repository
 
-After a release is published and GitHub Pages is enabled, add this URL in Dalamud:
+Add this URL in Dalamud:
 
 ```text
-https://acvonly.github.io/MinionScalerRepo/repo.json
+https://raw.githubusercontent.com/acvonly/MinionScalerRepo/main/repo.json
 ```
 
 In-game:
@@ -20,6 +20,8 @@ In-game:
 ## Use
 
 - Command: `/minionscaler`
+- Alias: `/minionscale`
+- Settings command: `/minionscalerconfig`
 - Default behavior: only scales your own summoned minion.
 - Disable the plugin or uncheck `Enable` to restore tracked minions to their original scale.
 
