@@ -147,10 +147,10 @@ public sealed unsafe class Plugin : IDalamudPlugin
     {
         var name = obj.Name.ToString();
         if (string.IsNullOrWhiteSpace(name))
-            name = $"Minion {obj.DataId}";
+            name = $"Minion {obj.BaseId}";
 
-        var key = obj.DataId != 0
-            ? $"data:{obj.DataId}"
+        var key = obj.BaseId != 0
+            ? $"data:{obj.BaseId}"
             : $"name:{name}";
 
         return new MinionEntry(key, name);
