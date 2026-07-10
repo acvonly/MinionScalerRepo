@@ -23,7 +23,7 @@ public sealed class ConfigWindow : Window, IDisposable
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(520, 320),
-            MaximumSize = new Vector2(840, 720),
+            MaximumSize = new Vector2(840, 10000),
         };
     }
 
