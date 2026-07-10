@@ -17,6 +17,8 @@ public sealed class MinionScaleSetting
 
     public string Name { get; set; } = "Unknown minion";
 
+    public uint IconId { get; set; }
+
     public float Scale { get; set; } = 1.5f;
 
     public bool ApplyToAll { get; set; }
