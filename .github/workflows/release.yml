@@ -79,7 +79,8 @@ jobs:
       - name: Create custom repository JSON
         shell: pwsh
         run: |
-          $version = "0.0.0.9"
+          [xml]$projectXml = Get-Content MinionScaler/MinionScaler.csproj
+          $version = $projectXml.Project.PropertyGroup.Version
           $tag = "${{ github.ref_name }}"
           if ("${{ github.event_name }}" -eq "release") {
             $tag = "${{ github.event.release.tag_name }}"
