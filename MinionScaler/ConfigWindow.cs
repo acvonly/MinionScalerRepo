@@ -47,8 +47,18 @@ public sealed class ConfigWindow : Window, IDisposable
             ImGui.TextUnformatted(minion.Name);
 
             var scale = plugin.GetScaleForMinion(minion);
-            ImGui.SetNextItemWidth(260);
-            if (ImGui.SliderFloat("Scale", ref scale, 0.1f, 10.0f, "%.2fx"))
+            ImGui.AlignTextToFramePadding();
+            ImGui.TextUnformatted("Scale");
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(240);
+            if (ImGui.SliderFloat("##scale-slider", ref scale, 0.1f, 10.0f, "%.2fx"))
+            {
+                plugin.SetPreviewScale(minion, scale);
+            }
+
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(90);
+            if (ImGui.InputFloat("##scale-input", ref scale, 0.01f, 0.10f, "%.2f"))
             {
                 plugin.SetPreviewScale(minion, scale);
             }
@@ -57,6 +67,12 @@ public sealed class ConfigWindow : Window, IDisposable
             if (ImGui.Button("Save"))
             {
                 plugin.SaveMinionScale(minion);
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Default"))
+            {
+                plugin.ResetMinionScale(minion);
             }
 
             ImGui.PopID();
@@ -70,7 +86,15 @@ public sealed class ConfigWindow : Window, IDisposable
 
         foreach (var setting in config.MinionScales.Values.OrderBy(x => x.Name).ToArray())
         {
-            ImGui.BulletText($"{setting.Name}: {setting.Scale:0.00}x");
+            ImGui.PushID($"saved-{setting.Key}");
+            ImGui.TextUnformatted($"{setting.Name}: {setting.Scale:0.00}x");
+            ImGui.SameLine();
+            if (ImGui.Button("Delete"))
+            {
+                plugin.DeleteMinionScale(setting.Key);
+            }
+
+            ImGui.PopID();
         }
     }
 }
