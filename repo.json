@@ -4,7 +4,7 @@
     "Name": "Minion Scaler",
     "Description": "Adjusts the local display scale of minions. Use /minionscalerconfig to configure.",
     "InternalName": "MinionScaler",
-    "AssemblyVersion": "0.0.0.4",
+    "AssemblyVersion": "0.0.0.5",
     "TestingAssemblyVersion": null,
     "RepoUrl": "https://github.com/acvonly/MinionScalerRepo",
     "ApplicableVersion": "any",
@@ -19,9 +19,9 @@
     "IsHide": false,
     "IsTestingExclusive": false,
     "IconUrl": "https://raw.githubusercontent.com/acvonly/MinionScalerRepo/main/Assets/icon.svg",
-    "DownloadLinkInstall": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.4/MinionScaler.zip",
-    "DownloadLinkTesting": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.4/MinionScaler.zip",
-    "DownloadLinkUpdate": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.4/MinionScaler.zip",
+    "DownloadLinkInstall": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.5/MinionScaler.zip",
+    "DownloadLinkTesting": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.5/MinionScaler.zip",
+    "DownloadLinkUpdate": "https://github.com/acvonly/MinionScalerRepo/releases/download/v0.0.0.5/MinionScaler.zip",
     "DownloadCount": 0,
     "LastUpdate": 1783641600
   }
