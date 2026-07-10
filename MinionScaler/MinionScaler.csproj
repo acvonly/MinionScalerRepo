@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.0.0.9</Version>
-    <PackageProjectUrl>https://github.com/acvonly/MinionScalerRepo</PackageProjectUrl>
+    <Version>0.0.0.10</Version>
+    <PackageProjectUrl>https://github.com/miqote69/MinionScalerRepo</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
