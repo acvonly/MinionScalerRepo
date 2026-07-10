@@ -112,7 +112,9 @@ public sealed unsafe class Plugin : IDalamudPlugin
     private void ApplyScaleToVisibleMinions()
     {
         var localPlayer = ObjectTable.LocalPlayer;
-        var localEntityId = localPlayer?.EntityId ?? 0;
+        var hasLocalPlayer = localPlayer != null;
+        var localEntityId = hasLocalPlayer ? GetObjectIdPart(localPlayer.EntityId) : 0;
+        var localGameObjectId = hasLocalPlayer ? GetObjectIdPart(localPlayer.GameObjectId) : 0;
         var seenThisFrame = new HashSet<ulong>();
 
         foreach (var obj in ObjectTable.CharacterManagerObjects)
@@ -120,7 +122,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
             if (obj.ObjectKind != ObjectKind.Companion || obj.Address == nint.Zero || !obj.IsValid())
                 continue;
 
-            var isOwn = IsOwnedByLocalPlayer(obj, localPlayer != null, localEntityId);
+            var isOwn = IsOwnedByLocalPlayer(obj, hasLocalPlayer, localEntityId, localGameObjectId);
             var minion = CreateMinionEntry(obj, isOwn);
             var id = obj.GameObjectId;
             seenThisFrame.Add(id);
@@ -155,12 +157,13 @@ public sealed unsafe class Plugin : IDalamudPlugin
     public IReadOnlyList<MinionEntry> GetVisibleMinions()
     {
         var localPlayer = ObjectTable.LocalPlayer;
-        var localEntityId = localPlayer?.EntityId ?? 0;
         var hasLocalPlayer = localPlayer != null;
+        var localEntityId = hasLocalPlayer ? GetObjectIdPart(localPlayer.EntityId) : 0;
+        var localGameObjectId = hasLocalPlayer ? GetObjectIdPart(localPlayer.GameObjectId) : 0;
 
         return ObjectTable.CharacterManagerObjects
             .Where(obj => obj.ObjectKind == ObjectKind.Companion && obj.Address != nint.Zero && obj.IsValid())
-            .Select(obj => CreateMinionEntry(obj, IsOwnedByLocalPlayer(obj, hasLocalPlayer, localEntityId)))
+            .Select(obj => CreateMinionEntry(obj, IsOwnedByLocalPlayer(obj, hasLocalPlayer, localEntityId, localGameObjectId)))
             .GroupBy(x => x.Key)
             .Select(group =>
             {
@@ -268,9 +271,28 @@ public sealed unsafe class Plugin : IDalamudPlugin
         return isOwn || GetApplyToAllForKey(key);
     }
 
-    private static bool IsOwnedByLocalPlayer(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool hasLocalPlayer, ulong localEntityId)
+    private static bool IsOwnedByLocalPlayer(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool hasLocalPlayer, uint localEntityId, uint localGameObjectId)
     {
-        return hasLocalPlayer && obj.OwnerId == localEntityId;
+        if (!hasLocalPlayer)
+            return false;
+
+        var ownerId = GetObjectIdPart(obj.OwnerId);
+        var objectId = GetObjectIdPart(obj.GameObjectId);
+
+        return IsSameObjectId(ownerId, localEntityId)
+            || IsSameObjectId(ownerId, localGameObjectId)
+            || IsSameObjectId(objectId, localEntityId)
+            || IsSameObjectId(objectId, localGameObjectId);
+    }
+
+    private static bool IsSameObjectId(uint left, uint right)
+    {
+        return left != 0 && right != 0 && left == right;
+    }
+
+    private static uint GetObjectIdPart(ulong id)
+    {
+        return (uint)(id & 0xFFFFFFFF);
     }
 
     private static MinionEntry CreateMinionEntry(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool isOwn)
