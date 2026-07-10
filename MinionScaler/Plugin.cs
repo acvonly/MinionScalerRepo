@@ -1,9 +1,12 @@
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Lumina.Excel.Sheets;
 using SceneObject = FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 
@@ -21,12 +24,15 @@ public sealed unsafe class Plugin : IDalamudPlugin
     [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
     [PluginService] private static IObjectTable ObjectTable { get; set; } = null!;
     [PluginService] private static IFramework Framework { get; set; } = null!;
+    [PluginService] private static IDataManager DataManager { get; set; } = null!;
+    [PluginService] private static ITextureProvider TextureProvider { get; set; } = null!;
     [PluginService] private static IPluginLog Log { get; set; } = null!;
 
     private readonly Dictionary<ulong, float> originalScales = new();
     private readonly Dictionary<ulong, DrawScale> originalDrawScales = new();
     private readonly Dictionary<string, float> previewScales = new();
     private readonly Dictionary<string, bool> previewApplyToAll = new();
+    private readonly Dictionary<uint, uint> iconIdsByCompanionId = new();
     private readonly ConfigWindow configWindow;
     private readonly WindowSystem windowSystem = new("MinionScaler");
 
@@ -201,6 +207,18 @@ public sealed unsafe class Plugin : IDalamudPlugin
         previewScales[key] = Math.Clamp(scale, 0.1f, 10.0f);
     }
 
+    public void UpdateSavedMinionScale(string key, float scale)
+    {
+        scale = Math.Clamp(scale, 0.1f, 10.0f);
+        previewScales[key] = scale;
+
+        if (Configuration.MinionScales.TryGetValue(key, out var setting))
+        {
+            setting.Scale = scale;
+            Save();
+        }
+    }
+
     public bool GetApplyToAllForMinion(MinionEntry minion)
     {
         return GetApplyToAllForKey(minion.Key);
@@ -224,6 +242,17 @@ public sealed unsafe class Plugin : IDalamudPlugin
         previewApplyToAll[key] = applyToAll;
     }
 
+    public void UpdateSavedApplyToAll(string key, bool applyToAll)
+    {
+        previewApplyToAll[key] = applyToAll;
+
+        if (Configuration.MinionScales.TryGetValue(key, out var setting))
+        {
+            setting.ApplyToAll = applyToAll;
+            Save();
+        }
+    }
+
     public void ResetMinionScale(MinionEntry minion)
     {
         ResetMinionScale(minion.Key);
@@ -237,17 +266,29 @@ public sealed unsafe class Plugin : IDalamudPlugin
         Save();
     }
 
-    public void SaveMinionScale(MinionEntry minion)
+    public void ResetSavedMinionScale(string key)
     {
-        SaveMinionScale(minion.Key, minion.Name);
+        previewScales[key] = 1.0f;
+
+        if (Configuration.MinionScales.TryGetValue(key, out var setting))
+        {
+            setting.Scale = 1.0f;
+            Save();
+        }
     }
 
-    public void SaveMinionScale(string key, string name)
+    public void SaveMinionScale(MinionEntry minion)
+    {
+        SaveMinionScale(minion.Key, minion.Name, minion.IconId);
+    }
+
+    public void SaveMinionScale(string key, string name, uint iconId = 0)
     {
         Configuration.MinionScales[key] = new MinionScaleSetting
         {
             Key = key,
             Name = name,
+            IconId = iconId != 0 ? iconId : GetIconIdForKey(key),
             Scale = GetScaleForKey(key),
             ApplyToAll = GetApplyToAllForKey(key),
         };
@@ -269,6 +310,29 @@ public sealed unsafe class Plugin : IDalamudPlugin
             return false;
 
         return isOwn || GetApplyToAllForKey(key);
+    }
+
+    public bool TryGetIconTexture(uint iconId, out IDalamudTextureWrap? texture)
+    {
+        texture = null;
+        if (iconId == 0)
+            return false;
+
+        try
+        {
+            texture = TextureProvider.GetFromGameIcon(new GameIconLookup(iconId)).GetWrapOrEmpty();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Failed to load minion icon {IconId}.", iconId);
+            return false;
+        }
+    }
+
+    public uint GetIconIdForKey(string key)
+    {
+        return TryGetCompanionId(key, out var companionId) ? GetIconIdForCompanionId(companionId) : 0;
     }
 
     private static bool IsOwnedByLocalPlayer(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool hasLocalPlayer, uint localEntityId, uint localGameObjectId)
@@ -295,7 +359,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
         return (uint)(id & 0xFFFFFFFF);
     }
 
-    private static MinionEntry CreateMinionEntry(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool isOwn)
+    private MinionEntry CreateMinionEntry(Dalamud.Game.ClientState.Objects.Types.IGameObject obj, bool isOwn)
     {
         var name = obj.Name.ToString();
         if (string.IsNullOrWhiteSpace(name))
@@ -305,7 +369,38 @@ public sealed unsafe class Plugin : IDalamudPlugin
             ? $"data:{obj.BaseId}"
             : $"name:{name}";
 
-        return new MinionEntry(key, name, isOwn);
+        return new MinionEntry(key, name, isOwn, GetIconIdForCompanionId(obj.BaseId));
+    }
+
+    private uint GetIconIdForCompanionId(uint companionId)
+    {
+        if (companionId == 0)
+            return 0;
+
+        if (iconIdsByCompanionId.TryGetValue(companionId, out var iconId))
+            return iconId;
+
+        try
+        {
+            iconId = DataManager.GetExcelSheet<Companion>().TryGetRow(companionId, out var companion)
+                ? (uint)companion.Icon
+                : 0;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Failed to read Companion icon for row {CompanionId}.", companionId);
+            iconId = 0;
+        }
+
+        iconIdsByCompanionId[companionId] = iconId;
+        return iconId;
+    }
+
+    private static bool TryGetCompanionId(string key, out uint companionId)
+    {
+        companionId = 0;
+        return key.StartsWith("data:", StringComparison.Ordinal)
+            && uint.TryParse(key.AsSpan(5), out companionId);
     }
 
     private void RestoreNoLongerMatchingMinions(HashSet<ulong> stillMatching)
@@ -389,7 +484,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
     }
 }
 
-public sealed record MinionEntry(string Key, string Name, bool IsOwn);
+public sealed record MinionEntry(string Key, string Name, bool IsOwn, uint IconId);
 
 internal readonly record struct DrawScale(float X, float Y, float Z)
 {
