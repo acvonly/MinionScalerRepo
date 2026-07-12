@@ -155,14 +155,28 @@ public sealed unsafe class Plugin : IDalamudPlugin
         var localEntityId = hasLocalPlayer ? GetObjectIdPart(localPlayer!.EntityId) : 0;
         var localGameObjectId = hasLocalPlayer ? GetObjectIdPart(localPlayer!.GameObjectId) : 0;
         var seenThisFrame = new HashSet<ulong>();
+        var frameMinions = ObjectTable.CharacterManagerObjects
+            .Where(obj => obj.ObjectKind == ObjectKind.Companion && obj.Address != nint.Zero && obj.IsValid())
+            .Select(obj =>
+            {
+                var isOwn = IsOwnedByLocalPlayer(obj, hasLocalPlayer, localEntityId, localGameObjectId);
+                return new FrameMinion(obj, CreateMinionEntry(obj, isOwn), isOwn);
+            })
+            .ToArray();
+        var ownKeys = frameMinions
+            .Where(minion => minion.IsOwn)
+            .Select(minion => minion.Entry.Key)
+            .ToHashSet(StringComparer.Ordinal);
+        var visibleCountsByKey = frameMinions
+            .GroupBy(minion => minion.Entry.Key, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        var useOwnershipFallback = IsGposeActive() || !hasLocalPlayer;
 
-        foreach (var obj in ObjectTable.CharacterManagerObjects)
+        foreach (var frameMinion in frameMinions)
         {
-            if (obj.ObjectKind != ObjectKind.Companion || obj.Address == nint.Zero || !obj.IsValid())
-                continue;
-
-            var isOwn = IsOwnedByLocalPlayer(obj, hasLocalPlayer, localEntityId, localGameObjectId);
-            var minion = CreateMinionEntry(obj, isOwn);
+            var obj = frameMinion.Object;
+            var minion = frameMinion.Entry;
+            var isOwn = frameMinion.IsOwn;
             var id = obj.GameObjectId;
             seenThisFrame.Add(id);
 
@@ -174,7 +188,12 @@ public sealed unsafe class Plugin : IDalamudPlugin
                 continue;
             }
 
-            if (!ShouldApplyScale(minion.Key, isOwn))
+            if (!ShouldApplyScale(
+                    minion.Key,
+                    isOwn,
+                    ownKeys.Contains(minion.Key),
+                    visibleCountsByKey.TryGetValue(minion.Key, out var visibleCount) ? visibleCount : 0,
+                    useOwnershipFallback))
             {
                 RestoreTrackedMinion(id, gameObject);
                 continue;
@@ -421,12 +440,29 @@ public sealed unsafe class Plugin : IDalamudPlugin
         return Math.Abs(GetScaleForKey(key) - 1.0f) > 0.001f;
     }
 
-    private bool ShouldApplyScale(string key, bool isOwn)
+    private bool ShouldApplyScale(string key, bool isOwn, bool hasOwnEntryForKey, int visibleCountForKey, bool useOwnershipFallback)
     {
         if (!previewScales.ContainsKey(key) && !Configuration.MinionScales.ContainsKey(key))
             return false;
 
-        return isOwn || GetApplyToAllForKey(key);
+        if (GetApplyToAllForKey(key) || isOwn)
+            return true;
+
+        return !hasOwnEntryForKey && (useOwnershipFallback || visibleCountForKey == 1);
+    }
+
+    private static bool IsGposeActive()
+    {
+        try
+        {
+            return typeof(IClientState).GetProperty("IsGPosing", BindingFlags.Instance | BindingFlags.Public)?.GetValue(ClientState) as bool?
+                ?? typeof(IClientState).GetProperty("IsGpose", BindingFlags.Instance | BindingFlags.Public)?.GetValue(ClientState) as bool?
+                ?? false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static bool IsTargetableCompanion(IGameObject obj)
@@ -704,6 +740,8 @@ public sealed unsafe class Plugin : IDalamudPlugin
 }
 
 public sealed record MinionEntry(string Key, uint CompanionId, string Name, bool IsOwn, uint IconId);
+
+internal sealed record FrameMinion(IGameObject Object, MinionEntry Entry, bool IsOwn);
 
 internal sealed record ClientStateSubscription(EventInfo EventInfo, Delegate Handler);
 
