@@ -17,7 +17,7 @@ param(
 
 $downloadUrl = "https://github.com/$Owner/$Repository/releases/download/$Tag/MinionScaler.zip"
 $repoUrl = "https://github.com/$Owner/$Repository"
-$lastUpdate = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds().ToString()
+$lastUpdate = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 
 $entry = [ordered]@{
     Author = $Owner
@@ -45,4 +45,6 @@ $entry = [ordered]@{
     LastUpdate = $lastUpdate
 }
 
-@($entry) | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $OutputPath -Encoding utf8
+$json = ConvertTo-Json -InputObject @($entry) -Depth 5
+$absoluteOutputPath = [System.IO.Path]::GetFullPath($OutputPath)
+[System.IO.File]::WriteAllText($absoluteOutputPath, $json, [System.Text.UTF8Encoding]::new($false))
