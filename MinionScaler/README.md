@@ -1,22 +1,27 @@
 # Minion Scaler
 
-Dalamud plugin prototype that changes visible minion size locally.
+FFXIVのミニオンの表示サイズをローカルで変更するDalamudプラグインです。
 
-## Use
+## 主な機能
 
-- Command: `/minionscaler`
-- Alias: `/minionscale`
-- Settings command: `/minionscalerconfig`
-- Saved minion settings can apply to only your minion or to everyone using that minion.
-- Use the `Default` button or remove a saved setting to restore tracked minions to their original scale.
+- `Visible` に表示されたミニオンを `0.10x`～`10.00x` に変更
+- `Everyone` / `Mine only` の適用範囲
+- ミニオン別のピン留めと自動再適用
+- 名前フィルター、アイコンからのターゲット
+- 個別・一括の初期化とピン留め削除
 
-## Localization
+## コマンド
 
-- UI language can be selected from `Settings`: Automatic, English, Japanese, German, or French.
-- `Automatic` follows the current FFXIV client language.
-- Minion names always follow the FFXIV client language and are resolved from game data when available.
-- The filter and sorting use the localized minion names currently shown on screen, independent of the selected UI language.
+`/minionscaler` 、`/minionscale` 、`/minionscalerconfig` のいずれかで設定画面を開きます。
 
-## Notes
+## 対応言語
 
-This is a cosmetic client-side plugin prototype. It does not automate gameplay, send network requests, or collect player data. It writes to local object scale and draw-object transform fields, so it may need adjustment when FFXIV or Dalamud changes object structures.
+UIは英語、日本語、ドイツ語、フランス語に対応しています。
+
+韓国語版および中国語版FFXIVはテスト環境がないため動作未確認です。現在のUIに韓国語・中国語の翻訳は含まれていません。
+
+## 注意
+
+変更は自分のクライアント上のみです。本プラグインはローカルのゲームオブジェクトを操作する開発中プラグインです。使用は自己責任でお願いします。
+
+詳細とインストール方法はリポジトリ直下の `README.md` を参照してください。
