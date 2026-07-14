@@ -1,43 +1,43 @@
 # Minion Scaler
 
-FFXIVのミニオンの表示サイズを、自分のクライアント上で変更するDalamudプラグインです。
+Minion Scaler is a Dalamud plugin that changes the displayed size of FFXIV minions on your local game client.
 
 > [!CAUTION]
-> 本プラグインは開発初期のβ版です。クラッシュ、不正なミニオン表示、元サイズの復元失敗、ローカルのプラグイン設定データの破損・損失を防ぐため、合理的に可能な範囲で対策を行っていますが、これらの問題が発生しないことは保証できません。本プラグインの使用によって生じたクラッシュ、データ損失、その他のいかなる損害や結果についても保証できません。内容とリスクを理解した上で、自己責任で使用してください。
+> Minion Scaler is an early beta and remains under active development. Every reasonable precaution is taken to prevent crashes, incorrect minion states, restoration failures, and loss or corruption of local plugin configuration data, but the absence of these problems cannot be guaranteed. No warranty is provided for crashes, data loss, damage, or any other result caused by using this plugin. Use it only if you understand and accept these risks.
 
-## 主な機能
+## Features
 
-- ターゲット可能な範囲のミニオンを `Visible` に表示
-- スライダーまたは数値入力で `0.10x`～`10.00x` に変更
-- `Everyone` と `Mine only` の適用範囲を選択
-- 設定をピン留めし、同じミニオンの表示時に自動適用
-- ミニオン名による `Visible` / `Pinned` 共通フィルター
-- アイコンのクリックで、同種の最も近いミニオンをターゲット
-- グループポーズやエリア移動後に保存済み設定を再適用
-- 個別または一括で初期値へ戻す・ピン留めを削除
+- Lists minions currently within targetable range in the `Visible` tab.
+- Changes scale from `0.10x` to `10.00x` with a slider or numeric input.
+- Applies settings to `Everyone` or `Mine only`.
+- Pins per-minion settings and reapplies them when matching minions appear.
+- Filters the `Visible` and `Pinned` tabs by minion name.
+- Targets the nearest matching minion when its icon is clicked.
+- Reapplies saved settings after territory changes and in GPose.
+- Resets or removes individual and all pinned settings.
 
-変更はローカル表示のみです。サーバーデータや他のプレイヤーの表示は変更しません。
+Changes are local only. Minion Scaler does not modify server-side minion data or how minions appear to other players.
 
-## インストール
+## Installation
 
-Dalamud設定の `Experimental` から、次のURLをカスタムプラグインリポジトリに追加してください。
+Add the following URL to `Custom Plugin Repositories` under Dalamud Settings > `Experimental`:
 
 ```text
 https://raw.githubusercontent.com/miqote69/MinionScalerRepo/main/repo.json
 ```
 
-追加後、Dalamud Plugin Installerで `Minion Scaler` を検索してインストールします。
+After saving the repository, open the Dalamud Plugin Installer, search for `Minion Scaler`, and install it.
 
-## 使い方
+## Basic Usage
 
-1. ミニオンを呼び出すか、表示中のミニオンに近づきます。
-2. `/minionscaler` で設定画面を開きます。
-3. `Visible` で倍率と適用範囲を設定します。
-4. ピンボタンを押すと `Pinned` に保存されます。
+1. Summon a minion or move close to a visible minion.
+2. Open the plugin with `/minionscaler`.
+3. Set the scale and application scope in the `Visible` tab.
+4. Click the pin button to save the setting in the `Pinned` tab.
 
-`Everyone` は同種のミニオンすべて、`Mine only` は自分のミニオンだけを対象にします。新規設定の初期値は `Everyone` です。
+`Everyone` applies the scale to every visible instance of the same minion type. `Mine only` applies it only to the minion identified as belonging to the local player. New settings default to `Everyone`.
 
-## コマンド
+## Commands
 
 ```text
 /minionscaler
@@ -45,29 +45,31 @@ https://raw.githubusercontent.com/miqote69/MinionScalerRepo/main/repo.json
 /minionscalerconfig
 ```
 
-すべて同じ設定画面を開きます。
+All commands open the same configuration window.
 
-## 対応言語
+## Languages
 
-UIは次の言語に対応しています。`Automatic` ではFFXIVクライアントの言語設定に従います。
+The UI supports:
 
 - English
-- 日本語
-- Deutsch
-- Français
+- Japanese
+- German
+- French
 
-ミニオン名は、UI言語とは別にFFXIVのゲームデータから取得します。
+`Automatic` follows the FFXIV client language. Minion names are read separately from FFXIV game data.
 
-> [!NOTE]
-> 韓国語版および中国語版FFXIVは、開発者にテストできる環境がないため動作未確認です。これらの地域版でプラグインが正常に動作するかは不明です。また、現在のUIに韓国語・中国語の翻訳は含まれていません。
+Korean and Chinese FFXIV client versions have not been tested because no compatible test environment is available. Whether the plugin works correctly on those clients is unknown. Korean and Chinese UI translations are not currently included.
 
-## 注意事項
+## Safety and Scope
 
-- ミニオンの `GameObject` と `DrawObject` のスケールをローカルで書き換えます。
-- 初期値へ戻す時は、変更前に記録した値への復元を試みます。
-- FFXIV、Dalamud、FFXIVClientStructsの更新後は動作しなくなる可能性があります。
-- ゲームプレイの自動化、ネットワーク送信、プレイヤーデータの収集は行いません。
+- Minion Scaler modifies local `GameObject` and `DrawObject` scale values.
+- It records the original values before applying a multiplier and attempts to restore them when settings are reset or removed.
+- Complete restoration cannot be guaranteed after objects are recreated, the game is updated, or another plugin changes the same values.
+- FFXIV, Dalamud, or FFXIVClientStructs updates may temporarily break the plugin.
+- The plugin does not automate gameplay, send gameplay commands, upload minion information, or collect player data.
+
+More detailed instructions, troubleshooting, and answers are available in the [Wiki](https://github.com/miqote69/MinionScalerRepo/wiki).
 
 ## License
 
-[MIT License](LICENSE)
+Minion Scaler is licensed under the [MIT License](LICENSE).

@@ -1,27 +1,27 @@
 # Minion Scaler
 
-FFXIVのミニオンの表示サイズをローカルで変更するDalamudプラグインです。
+Minion Scaler is a Dalamud plugin that changes the displayed size of FFXIV minions on the local game client.
 
-## 主な機能
+## Features
 
-- `Visible` に表示されたミニオンを `0.10x`～`10.00x` に変更
-- `Everyone` / `Mine only` の適用範囲
-- ミニオン別のピン留めと自動再適用
-- 名前フィルター、アイコンからのターゲット
-- 個別・一括の初期化とピン留め削除
+- Scale visible minions from `0.10x` to `10.00x`.
+- Apply settings to `Everyone` or `Mine only`.
+- Pin per-minion settings for automatic reapplication.
+- Filter by name and target a minion from its icon.
+- Reset or remove individual and all pinned settings.
 
-## コマンド
+## Commands
 
-`/minionscaler` 、`/minionscale` 、`/minionscalerconfig` のいずれかで設定画面を開きます。
+Open the configuration window with `/minionscaler`, `/minionscale`, or `/minionscalerconfig`.
 
-## 対応言語
+## Languages
 
-UIは英語、日本語、ドイツ語、フランス語に対応しています。
+The UI supports English, Japanese, German, and French.
 
-韓国語版および中国語版FFXIVはテスト環境がないため動作未確認です。現在のUIに韓国語・中国語の翻訳は含まれていません。
+Korean and Chinese FFXIV client versions have not been tested because no compatible test environment is available. Korean and Chinese UI translations are not currently included.
 
-## 注意
+## Caution
 
-変更は自分のクライアント上のみです。本プラグインはローカルのゲームオブジェクトを操作する開発初期のβ版です。クラッシュ、不正なミニオン表示、復元失敗、ローカル設定データの破損・損失を防ぐため、合理的に可能な範囲で対策を行っていますが、これらの問題が発生しないことは保証できません。使用によって生じたいかなる損害や結果についても保証できません。リスクを理解した上で、自己責任で使用してください。
+Minion Scaler is an early beta that modifies local game objects. Every reasonable precaution is taken to prevent crashes, incorrect minion states, restoration failures, and local configuration data loss, but these outcomes cannot be ruled out or guaranteed against. Use the plugin at your own risk.
 
-詳細とインストール方法はリポジトリ直下の `README.md` を参照してください。
+See the repository-level `README.md` and [Wiki](https://github.com/miqote69/MinionScalerRepo/wiki) for installation, usage, troubleshooting, and safety details.
