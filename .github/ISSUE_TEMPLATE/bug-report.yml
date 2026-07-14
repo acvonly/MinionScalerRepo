@@ -1,0 +1,134 @@
+name: Bug report
+description: Report a reproducible problem with Minion Scaler
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Minion Scaler is an early beta, so detailed reproduction information is especially useful.
+
+        Before submitting, check the [FAQ](https://github.com/miqote69/MinionScalerRepo/wiki/FAQ) and [Troubleshooting](https://github.com/miqote69/MinionScalerRepo/wiki/Troubleshooting) pages.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am using the latest available Minion Scaler release.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I removed character names and other personal information from logs and screenshots.
+          required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Minion Scaler version
+      description: Shown in the Minion Scaler window title or Dalamud Plugin Installer.
+      placeholder: "0.0.0.30"
+    validations:
+      required: true
+
+  - type: input
+    id: game-environment
+    attributes:
+      label: FFXIV and Dalamud environment
+      description: Include whether FFXIV and Dalamud are fully updated and which client region or language you use.
+      placeholder: "FFXIV updated, Dalamud stable, English client"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: context
+    attributes:
+      label: Where does the problem occur?
+      options:
+        - Normal field or city
+        - After a territory change
+        - GPose
+        - Plugin installation or update
+        - Configuration UI
+        - Plugin startup or shutdown
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: minion
+    attributes:
+      label: Affected minion
+      description: Enter the displayed minion name, or "Not applicable" for installation and UI issues.
+      placeholder: "Minion name"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: application-scope
+    attributes:
+      label: Application scope
+      options:
+        - Everyone
+        - Mine only
+        - Not applicable
+    validations:
+      required: true
+
+  - type: input
+    id: scale
+    attributes:
+      label: Configured scale
+      description: Enter the scale value, or "Not applicable."
+      placeholder: "1.50x"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem description
+      description: Explain what happened and whether it happens every time.
+      placeholder: "Describe the observed behavior."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the shortest sequence that consistently reproduces the problem.
+      placeholder: |
+        1. Summon ...
+        2. Set ...
+        3. Enter ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: "Describe what you expected to happen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: other-plugins
+    attributes:
+      label: Related plugins or external tools
+      description: List anything that can change actor, minion, GPose, or scale state, such as Ktisis. State whether disabling it changes the result.
+      placeholder: "Ktisis installed; issue still occurs when disabled."
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Attach only the relevant section. Remove character names and other personal information first.
+      render: text
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other detail that may help reproduce or diagnose the problem.

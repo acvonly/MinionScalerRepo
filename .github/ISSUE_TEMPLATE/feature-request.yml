@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest an improvement or new capability for Minion Scaler
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement. Please describe the user problem first, then the proposed behavior.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for the same or a similar request.
+          required: true
+        - label: This request is related to local cosmetic minion display behavior.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What is difficult or unavailable today?
+      placeholder: "Describe the workflow or limitation that prompted this request."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe how the feature should work from the user's point of view.
+      placeholder: "Describe the desired controls, behavior, and result."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any workaround or alternative design you have tried.
+
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility considerations
+      description: Mention GPose, territory changes, other plugins, languages, or specific minion types when relevant.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context or mockups
+      description: Add screenshots, sketches, or examples if they help explain the request. Remove personal information before attaching files.
